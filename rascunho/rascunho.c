@@ -13,7 +13,11 @@ bool is_valid(int x, int y, int map[ROWS][COLS], bool closed_list[ROWS][COLS]) {
 // Função para reconstruir o caminho
 void reconstruct_path(TPathNode* current, int map[ROWS][COLS]) {
     while (current != NULL) {
-        map[current->x][current->y] = 2; // Marcar o caminho no mapa
+        if (current->x >= ROWS || current->y >= COLS || current->x < 0 || current->y < 0) {
+            printf("Erro: Posição inválida no caminho (%d, %d).\n", current->x, current->y);
+            break;
+        }
+        map[current->x][current->y] = 2;
         current = current->parent;
     }
 }
@@ -25,6 +29,11 @@ void a_star(int map[ROWS][COLS], int start_x, int start_y, int goal_x, int goal_
     int open_count = 0;
 
     TPathNode* start = (TPathNode*)malloc(sizeof(TPathNode));
+    if (!start) {
+        perror("Erro de alocação de memória para o nó inicial.");
+        exit(EXIT_FAILURE);
+    }
+
     start->x = start_x;
     start->y = start_y;
     start->g_cost = 0;
@@ -48,6 +57,10 @@ void a_star(int map[ROWS][COLS], int start_x, int start_y, int goal_x, int goal_
         if (current->x == goal_x && current->y == goal_y) {
             reconstruct_path(current, map);
             printf("Caminho encontrado!\n");
+
+            for (int i = 0; i < open_count; i++) {
+                free(open_list[i]);
+            }
             free(current);
             return;
         }
@@ -63,6 +76,11 @@ void a_star(int map[ROWS][COLS], int start_x, int start_y, int goal_x, int goal_
 
             if (is_valid(nx, ny, map, closed_list)) {
                 TPathNode* neighbor = (TPathNode*)malloc(sizeof(TPathNode));
+                if (!neighbor) {
+                    perror("Erro de alocação de memória para vizinho.");
+                    exit(EXIT_FAILURE);
+                }
+
                 neighbor->x = nx;
                 neighbor->y = ny;
                 neighbor->g_cost = current->g_cost + 1;
@@ -70,14 +88,27 @@ void a_star(int map[ROWS][COLS], int start_x, int start_y, int goal_x, int goal_
                 neighbor->f_cost = neighbor->g_cost + neighbor->h_cost;
                 neighbor->parent = current;
 
+                if (open_count >= ROWS * COLS) {
+                    printf("Erro: Lista aberta cheia.\n");
+                    exit(EXIT_FAILURE);
+                }
+
+                printf("Adicionando vizinho (%d, %d) com f_cost = %d\n", neighbor->x, neighbor->y, neighbor->f_cost);
+
                 open_list[open_count++] = neighbor;
             }
         }
+
         free(current);
     }
 
     printf("Caminho não encontrado!\n");
+
+    for (int i = 0; i < open_count; i++) {
+        free(open_list[i]);
+    }
 }
+
 
 // Função para imprimir o mapa
 void print_map(int map[ROWS][COLS]) {
@@ -103,7 +134,6 @@ void read_map(const char* filename, int map[ROWS][COLS]) {
         exit(EXIT_FAILURE);
     }
 
-
     for (int i = 0; i < ROWS; i++) {
         for (int j = 0; j < COLS; j++) {
             if (fscanf(file, "%d", &map[i][j]) != 1) {
@@ -113,7 +143,6 @@ void read_map(const char* filename, int map[ROWS][COLS]) {
             }
         }
     }
-
 
     fclose(file);
 }
