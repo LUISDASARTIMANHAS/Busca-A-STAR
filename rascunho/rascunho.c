@@ -1,161 +1,139 @@
 #include "rascunho.h"
 
-// Função para calcular a heurística Manhattan
-int heuristic(int x1, int y1, int x2, int y2) {
+int heuristica(int x1, int y1, int x2, int y2) {
     return abs(x1 - x2) + abs(y1 - y2);
 }
 
-// Função para verificar se uma posição é válida no mapa
-bool is_valid(int x, int y, int map[ROWS][COLS], bool closed_list[ROWS][COLS]) {
-    return (x >= 0 && x < ROWS && y >= 0 && y < COLS && map[x][y] == 0 && !closed_list[x][y]);
+bool eh_valido(int x, int y, int mapa[LINHAS][COLUNAS], bool lista_fechada[LINHAS][COLUNAS]) {
+    return (x >= 0 && x < LINHAS && y >= 0 && y < COLUNAS && mapa[x][y] == 0 && !lista_fechada[x][y]);
 }
 
-// Função para reconstruir o caminho
-void reconstruct_path(TPathNode* current, int map[ROWS][COLS]) {
-    while (current != NULL) {
-        if (current->x >= ROWS || current->y >= COLS || current->x < 0 || current->y < 0) {
-            printf("Erro: Posição inválida no caminho (%d, %d).\n", current->x, current->y);
-            break;
+bool esta_na_lista_aberta(TNoCaminho* lista[], int contagem, int x, int y) {
+    for (int i = 0; i < contagem; i++) {
+        if (lista[i]->x == x && lista[i]->y == y) {
+            return true;
         }
-        map[current->x][current->y] = 2;
-        current = current->parent;
     }
+    return false;
 }
 
-// Função para o algoritmo A*
-void a_star(int map[ROWS][COLS], int start_x, int start_y, int goal_x, int goal_y) {
-    bool closed_list[ROWS][COLS] = {false};
-    TPathNode* open_list[ROWS * COLS];
-    int open_count = 0;
-
-    TPathNode* start = (TPathNode*)malloc(sizeof(TPathNode));
-    if (!start) {
-        perror("Erro de alocação de memória para o nó inicial.");
+TNoCaminho* criar_no(int x, int y, int custo_g, int custo_h, TNoCaminho* pai) {
+    TNoCaminho* no = (TNoCaminho*)malloc(sizeof(TNoCaminho));
+    if (!no) {
+        perror("Erro ao alocar memória para o nó.");
         exit(EXIT_FAILURE);
     }
+    no->x = x;
+    no->y = y;
+    no->custo_g = custo_g;
+    no->custo_h = custo_h;
+    no->custo_f = custo_g + custo_h;
+    no->pai = pai;
+    return no;
+}
 
-    start->x = start_x;
-    start->y = start_y;
-    start->g_cost = 0;
-    start->h_cost = heuristic(start_x, start_y, goal_x, goal_y);
-    start->f_cost = start->g_cost + start->h_cost;
-    start->parent = NULL;
+void reconstruir_caminho(TNoCaminho* atual, int mapa[LINHAS][COLUNAS]) {
+    while (atual != NULL) {
+        if (atual->x < 0 || atual->x >= LINHAS || atual->y < 0 || atual->y >= COLUNAS) {
+            printf("Erro: Coordenadas inválidas (%d, %d).\n", atual->x, atual->y);
+            break;
+        }
+        mapa[atual->x][atual->y] = 2;
+        atual = atual->pai;
+    }
+}
 
-    open_list[open_count++] = start;
+void liberar_lista_aberta(TNoCaminho* lista[], int contagem) {
+    for (int i = 0; i < contagem; i++) {
+        free(lista[i]);
+    }
+}
 
-    while (open_count > 0) {
-        int min_index = 0;
-        for (int i = 1; i < open_count; i++) {
-            if (open_list[i]->f_cost < open_list[min_index]->f_cost) {
-                min_index = i;
+void busca_a_estrela(int mapa[LINHAS][COLUNAS], int inicio_x, int inicio_y, int objetivo_x, int objetivo_y) {
+    bool lista_fechada[LINHAS][COLUNAS] = {false};
+    TNoCaminho* lista_aberta[LINHAS * COLUNAS];
+    int contagem_aberta = 0;
+
+    TNoCaminho* inicio = criar_no(inicio_x, inicio_y, 0, heuristica(inicio_x, inicio_y, objetivo_x, objetivo_y), NULL);
+    lista_aberta[contagem_aberta++] = inicio;
+
+    while (contagem_aberta > 0) {
+        int indice_min = 0;
+        for (int i = 1; i < contagem_aberta; i++) {
+            if (lista_aberta[i]->custo_f < lista_aberta[indice_min]->custo_f) {
+                indice_min = i;
             }
         }
 
-        TPathNode* current = open_list[min_index];
-        open_list[min_index] = open_list[--open_count];
+        TNoCaminho* atual = lista_aberta[indice_min];
+        lista_aberta[indice_min] = lista_aberta[--contagem_aberta];
 
-        if (current->x == goal_x && current->y == goal_y) {
-            reconstruct_path(current, map);
+        if (atual->x == objetivo_x && atual->y == objetivo_y) {
+            reconstruir_caminho(atual, mapa);
+            liberar_lista_aberta(lista_aberta, contagem_aberta);
+            free(atual);
             printf("Caminho encontrado!\n");
-
-            for (int i = 0; i < open_count; i++) {
-                free(open_list[i]);
-            }
-            free(current);
             return;
         }
 
-        closed_list[current->x][current->y] = true;
+        lista_fechada[atual->x][atual->y] = true;
 
         int dx[] = {0, 0, 1, -1};
         int dy[] = {1, -1, 0, 0};
 
         for (int i = 0; i < 4; i++) {
-            int nx = current->x + dx[i];
-            int ny = current->y + dy[i];
+            int nx = atual->x + dx[i];
+            int ny = atual->y + dy[i];
 
-            if (is_valid(nx, ny, map, closed_list)) {
-                TPathNode* neighbor = (TPathNode*)malloc(sizeof(TPathNode));
-                if (!neighbor) {
-                    perror("Erro de alocação de memória para vizinho.");
-                    exit(EXIT_FAILURE);
+            if (eh_valido(nx, ny, mapa, lista_fechada)) {
+                if (!esta_na_lista_aberta(lista_aberta, contagem_aberta, nx, ny)) {
+                    TNoCaminho* vizinho = criar_no(nx, ny, atual->custo_g + 1, heuristica(nx, ny, objetivo_x, objetivo_y), atual);
+                    lista_aberta[contagem_aberta++] = vizinho;
                 }
-
-                neighbor->x = nx;
-                neighbor->y = ny;
-                neighbor->g_cost = current->g_cost + 1;
-                neighbor->h_cost = heuristic(nx, ny, goal_x, goal_y);
-                neighbor->f_cost = neighbor->g_cost + neighbor->h_cost;
-                neighbor->parent = current;
-
-                if (open_count >= ROWS * COLS) {
-                    printf("Erro: Lista aberta cheia.\n");
-                    exit(EXIT_FAILURE);
-                }
-
-                printf("Adicionando vizinho (%d, %d) com f_cost = %d\n", neighbor->x, neighbor->y, neighbor->f_cost);
-
-                open_list[open_count++] = neighbor;
             }
         }
 
-        free(current);
+        free(atual);
     }
 
     printf("Caminho não encontrado!\n");
-
-    for (int i = 0; i < open_count; i++) {
-        free(open_list[i]);
-    }
+    liberar_lista_aberta(lista_aberta, contagem_aberta);
 }
 
-
-// Função para imprimir o mapa
-void print_map(int map[ROWS][COLS]) {
-    for (int i = 0; i < ROWS; i++) {
-        for (int j = 0; j < COLS; j++) {
-            if (map[i][j] == 1)
-                printf("█");
-            else if (map[i][j] == 2)
-                printf(".");
-            else
-                printf(" ");
+void imprimir_mapa(int mapa[LINHAS][COLUNAS]) {
+    for (int i = 0; i < LINHAS; i++) {
+        for (int j = 0; j < COLUNAS; j++) {
+            printf("%d ", mapa[i][j]);
         }
         printf("\n");
     }
 }
 
-// Função para ler o mapa de um arquivo
-void read_map(const char* filename, int map[ROWS][COLS]) {
-    FILE* file = fopen(filename, "r");
-    if (!file) {
-        printf("Erro ao abrir o arquivo: %s\n", filename);
-        perror("Detalhes do erro");
+void ler_mapa(const char* nome_arquivo, int mapa[LINHAS][COLUNAS]) {
+    FILE* arquivo = fopen(nome_arquivo, "r");
+    if (!arquivo) {
+        perror("Erro ao abrir o arquivo");
+        printf("Caminho fornecido: %s\n", nome_arquivo);
         exit(EXIT_FAILURE);
     }
-
-    for (int i = 0; i < ROWS; i++) {
-        for (int j = 0; j < COLS; j++) {
-            if (fscanf(file, "%d", &map[i][j]) != 1) {
-                printf("Erro ao ler os dados do mapa na posição (%d, %d).\n", i, j);
-                fclose(file);
-                exit(EXIT_FAILURE);
-            }
+    for (int i = 0; i < LINHAS; i++) {
+        for (int j = 0; j < COLUNAS; j++) {
+            fscanf(arquivo, "%d", &mapa[i][j]);
         }
     }
 
-    fclose(file);
+    fclose(arquivo);
 }
 
 int main() {
-    int map[ROWS][COLS];
-    read_map("/home/lucas/Documentos/ifes-2ano/Busca-A-STAR/rascunho/Mapa.txt", map);
+    int mapa[LINHAS][COLUNAS];
+    ler_mapa("Mapa.txt", mapa);
 
-    int start_x = 0, start_y = 0;
-    int goal_x = 9, goal_y = 9;
+    int inicio_x = 0, inicio_y = 0;
+    int objetivo_x = 9, objetivo_y = 9;
 
-    a_star(map, start_x, start_y, goal_x, goal_y);
-    print_map(map);
+    busca_a_estrela(mapa, inicio_x, inicio_y, objetivo_x, objetivo_y);
+    imprimir_mapa(mapa);
 
     return 0;
 }

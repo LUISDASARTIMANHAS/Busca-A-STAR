@@ -3,24 +3,22 @@
 #include <math.h>
 #include <stdbool.h>
 
-#ifndef RASCUNHO_H // Verifica se o identificador não foi definido
 #define RASCUNHO_H // Define o identificador
 
-#define ROWS 10
-#define COLS 10
+#define LINHAS 10
+#define COLUNAS 10
 
-typedef struct PathNode {
+typedef struct NoCaminho {
     int x, y;
-    int g_cost; // Custo do início até o nó atual
-    int h_cost; // Heurística (distância até o objetivo)
-    int f_cost; // Custo total: g_cost + h_cost
-    struct PathNode* parent; // Nó pai para reconstrução do caminho
-} TPathNode;
+    int custo_g; // Custo do início até o nó atual
+    int custo_h; // Heurística (distância até o objetivo)
+    int custo_f; // Custo total: custo_g + custo_h
+    struct NoCaminho* pai; // Nó pai para reconstrução do caminho
+} TNoCaminho;
 
-void read_map(const char* filename, int map[ROWS][COLS]);
-void print_map(int map[ROWS][COLS]);
-void a_star(int map[ROWS][COLS], int start_x, int start_y, int goal_x, int goal_y);
+void ler_mapa(const char* nome_arquivo, int mapa[LINHAS][COLUNAS]);
+void imprimir_mapa(int mapa[LINHAS][COLUNAS]);
+void busca_a_estrela(int mapa[LINHAS][COLUNAS], int inicio_x, int inicio_y, int objetivo_x, int objetivo_y);
 
-#endif // Finaliza o cabeçalho
 
 
