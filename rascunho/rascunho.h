@@ -16,7 +16,7 @@ typedef struct NoCaminho {
     struct NoCaminho* pai; // Nó pai para reconstrução do caminho
 } TNoCaminho;
 
-void ler_mapa(const char* nome_arquivo, int mapa[LINHAS][COLUNAS]);
+void ler_mapa(const char* nome_arquivo, int mapa[LINHAS][COLUNAS], int* inicio_x, int* inicio_y, int* objetivo_x, int* objetivo_y);
 void imprimir_mapa(int mapa[LINHAS][COLUNAS]);
 void busca_a_estrela(int mapa[LINHAS][COLUNAS], int inicio_x, int inicio_y, int objetivo_x, int objetivo_y);
 

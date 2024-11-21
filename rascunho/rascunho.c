@@ -5,8 +5,11 @@ int heuristica(int x1, int y1, int x2, int y2) {
 }
 
 bool eh_valido(int x, int y, int mapa[LINHAS][COLUNAS], bool lista_fechada[LINHAS][COLUNAS]) {
-    return (x >= 0 && x < LINHAS && y >= 0 && y < COLUNAS && mapa[x][y] == 0 && !lista_fechada[x][y]);
+    return (x >= 0 && x < LINHAS && y >= 0 && y < COLUNAS &&
+           (mapa[x][y] == 8 || mapa[x][y] == 9) && // Permitir objetivo como válido
+           !lista_fechada[x][y]);
 }
+
 
 bool esta_na_lista_aberta(TNoCaminho* lista[], int contagem, int x, int y) {
     for (int i = 0; i < contagem; i++) {
@@ -38,7 +41,10 @@ void reconstruir_caminho(TNoCaminho* atual, int mapa[LINHAS][COLUNAS]) {
             printf("Erro: Coordenadas inválidas (%d, %d).\n", atual->x, atual->y);
             break;
         }
-        mapa[atual->x][atual->y] = 2;
+        // Não sobrescreva o ponto de partida ou o objetivo
+        if (mapa[atual->x][atual->y] != 8 && mapa[atual->x][atual->y] != 9) {
+            mapa[atual->x][atual->y] = 2; // Marca o caminho
+        }
         atual = atual->pai;
     }
 }
@@ -57,6 +63,7 @@ void busca_a_estrela(int mapa[LINHAS][COLUNAS], int inicio_x, int inicio_y, int 
     TNoCaminho* inicio = criar_no(inicio_x, inicio_y, 0, heuristica(inicio_x, inicio_y, objetivo_x, objetivo_y), NULL);
     lista_aberta[contagem_aberta++] = inicio;
 
+    mapa[inicio_x][inicio_y] = 0; // Temporariamente libera o ponto inicial
     while (contagem_aberta > 0) {
         int indice_min = 0;
         for (int i = 1; i < contagem_aberta; i++) {
@@ -109,16 +116,28 @@ void imprimir_mapa(int mapa[LINHAS][COLUNAS]) {
     }
 }
 
-void ler_mapa(const char* nome_arquivo, int mapa[LINHAS][COLUNAS]) {
+void ler_mapa(const char* nome_arquivo, int mapa[LINHAS][COLUNAS], int* inicio_x, int* inicio_y, int* objetivo_x, int* objetivo_y) {
     FILE* arquivo = fopen(nome_arquivo, "r");
     if (!arquivo) {
         perror("Erro ao abrir o arquivo");
-        printf("Caminho fornecido: %s\n", nome_arquivo);
         exit(EXIT_FAILURE);
     }
+
     for (int i = 0; i < LINHAS; i++) {
         for (int j = 0; j < COLUNAS; j++) {
-            fscanf(arquivo, "%d", &mapa[i][j]);
+            char c;
+            fscanf(arquivo, " %c", &c); // Lê um caractere
+            if (c == '*') {
+                *inicio_x = i;
+                *inicio_y = j;
+                mapa[i][j] = 0; // Converte para 0 no mapa
+            } else if (c == '#') {
+                *objetivo_x = i;
+                *objetivo_y = j;
+                mapa[i][j] = 0; // Converte para 0 no mapa
+            } else {
+                mapa[i][j] = c - '0'; // Converte caractere para inteiro
+            }
         }
     }
 
@@ -127,13 +146,22 @@ void ler_mapa(const char* nome_arquivo, int mapa[LINHAS][COLUNAS]) {
 
 int main() {
     int mapa[LINHAS][COLUNAS];
-    ler_mapa("Mapa.txt", mapa);
+    int inicio_x, inicio_y, objetivo_x, objetivo_y;
 
-    int inicio_x = 0, inicio_y = 0;
-    int objetivo_x = 9, objetivo_y = 9;
+    // Lê o mapa e identifica o início e o objetivo
+    ler_mapa("Mapa.txt", mapa, &inicio_x, &inicio_y, &objetivo_x, &objetivo_y);
 
+    // Executa a busca A*
     busca_a_estrela(mapa, inicio_x, inicio_y, objetivo_x, objetivo_y);
+
+    // Marca o início e o objetivo no mapa novamente
+    mapa[inicio_x][inicio_y] = 8; // Representa o início
+    mapa[objetivo_x][objetivo_y] = 9; // Representa o objetivo
+
+    // Imprime o resultado
     imprimir_mapa(mapa);
 
     return 0;
 }
+
+
