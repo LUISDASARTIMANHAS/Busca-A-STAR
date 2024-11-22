@@ -39,6 +39,9 @@ if not exist ".git" (
 :: Verifica o status dos arquivos
 git status
 
+:: Sincroniza com a nuvem antes de enviar
+git pull
+
 :: Adiciona todos os arquivos alterados, respeitando o .gitignore
 git add .
 

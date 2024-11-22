@@ -55,5 +55,3 @@ tar -a -c -f "zip/%fullFileName%.zip" *data *builds *rascunho *.pdf *.h *.c *.c 
 msg * /v /w %fullFileName%.exe foi compilado!
 
 start "RUN" "builds/%fullFileName%.exe"
-
-start "autoGit" "autoGit.cmd"
