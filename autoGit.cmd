@@ -33,7 +33,7 @@ set fullFileName=%fileName%.V%versao%
 :: Inicializa o repositório Git (se necessário)
 if not exist ".git" (
     git init
-    git remote add origin https://github.com/LUISDASARTIMANHAS/Representacao-Computacional-de-Grafos-de-Listas-de-Adjacencia.git
+    git remote add origin https://github.com/LUISDASARTIMANHAS/Busca-A-STAR.git
 )
 
 :: Verifica o status dos arquivos

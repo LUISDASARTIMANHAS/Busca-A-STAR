@@ -1,4 +1,9 @@
 @ECHO OFF
+
+:: Cria as pastas template do projeto 
+start projectMaker.cmd
+
+
 :: Leitura do versao a partir do arquivo info.json
 for /f "tokens=2 delims=:," %%a in ('type info.json ^| findstr /C:"\"version\""') do (
     set "versao=%%~a"
