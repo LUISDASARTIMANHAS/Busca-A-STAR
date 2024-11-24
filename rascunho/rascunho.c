@@ -5,9 +5,19 @@ int heuristica(int x1, int y1, int x2, int y2) {
 }
 
 bool eh_valido(int x, int y, int mapa[LINHAS][COLUNAS], bool lista_fechada[LINHAS][COLUNAS]) {
-    return (x >= 0 && x < LINHAS && y >= 0 && y < COLUNAS &&
-            mapa[x][y] != 1 &&  // Verificar se não é uma parede
-            !lista_fechada[x][y]);  // Verificar se não foi processado
+    if (x < 0 || x >= LINHAS || y < 0 || y >= COLUNAS) {
+        printf("Nó inválido fora dos limites: (%d, %d)\n", x, y);
+        return false; // Fora dos limites
+    }
+    if (mapa[x][y] == 1) {
+        printf("Nó inválido é uma parede: (%d, %d)\n", x, y);
+        return false; // É uma parede
+    }
+    if (lista_fechada[x][y]) {
+        printf("Nó já processado: (%d, %d)\n", x, y);
+        return false; // Já foi processado
+    }
+    return true;
 }
 
 bool esta_na_lista_aberta(TNoCaminho* lista[], int contagem, int x, int y) {
@@ -72,8 +82,9 @@ void busca_a_estrela(int mapa[LINHAS][COLUNAS], int inicio_x, int inicio_y, int 
 
         printf("Processando nó: (%d, %d), custo_f: %d\n", atual->x, atual->y, atual->custo_f);
 
-        // Verificar se o nó atual é o objetivo
+        // Se o nó atual for o objetivo, finalize a busca
         if (atual->x == objetivo_x && atual->y == objetivo_y) {
+            printf("Reconstruindo caminho a partir do nó objetivo: (%d, %d)\n", atual->x, atual->y);
             reconstruir_caminho(atual, mapa);
             liberar_lista_aberta(lista_aberta, contagem_aberta);
             free(atual);
@@ -90,28 +101,33 @@ void busca_a_estrela(int mapa[LINHAS][COLUNAS], int inicio_x, int inicio_y, int 
             int nx = atual->x + dx[i];
             int ny = atual->y + dy[i];
 
-            if (eh_valido(nx, ny, mapa, lista_fechada)) {
-                // Adicionar o nó objetivo diretamente
-                if (nx == objetivo_x && ny == objetivo_y) {
-                    TNoCaminho* vizinho = criar_no(nx, ny, atual->custo_g + 1,
-                                                   heuristica(nx, ny, objetivo_x, objetivo_y), atual);
-                    lista_aberta[contagem_aberta++] = vizinho;
-                    continue; // Não processe mais vizinhos
-                }
+            if (!eh_valido(nx, ny, mapa, lista_fechada)) {
+                continue; // Ignore nós inválidos
+            }
 
-                if (!esta_na_lista_aberta(lista_aberta, contagem_aberta, nx, ny)) {
-                    printf("Adicionando nó: (%d, %d) à lista aberta\n", nx, ny);
-                    TNoCaminho* vizinho = criar_no(nx, ny, atual->custo_g + 1,
-                                                   heuristica(nx, ny, objetivo_x, objetivo_y), atual);
-                    lista_aberta[contagem_aberta++] = vizinho;
-                }
+            // Se o vizinho for o objetivo, finalize imediatamente
+            if (nx == objetivo_x && ny == objetivo_y) {
+                printf("Nó objetivo alcançado: (%d, %d)\n", nx, ny);
+                reconstruir_caminho(atual, mapa);
+                liberar_lista_aberta(lista_aberta, contagem_aberta);
+                free(atual);
+                return; // Encerra o algoritmo
+            }
+
+            // Adicionar o nó à lista aberta, se ainda não estiver lá
+            if (!esta_na_lista_aberta(lista_aberta, contagem_aberta, nx, ny)) {
+                printf("Adicionando nó: (%d, %d) à lista aberta\n", nx, ny);
+                TNoCaminho* vizinho = criar_no(nx, ny, atual->custo_g + 1,
+                                               heuristica(nx, ny, objetivo_x, objetivo_y), atual);
+                lista_aberta[contagem_aberta++] = vizinho;
             }
         }
 
         free(atual);
 
+        // Verificação para evitar loops infinitos
         if (contagem_aberta == 0) {
-            printf("Lista aberta está vazia. Não foi possível encontrar um caminho.\n");
+            printf("Erro: Lista aberta vazia, mas o objetivo não foi encontrado.\n");
             break;
         }
     }
@@ -119,6 +135,8 @@ void busca_a_estrela(int mapa[LINHAS][COLUNAS], int inicio_x, int inicio_y, int 
     liberar_lista_aberta(lista_aberta, contagem_aberta);
     printf("Caminho não encontrado!\n");
 }
+
+
 
 void imprimir_mapa(int mapa[LINHAS][COLUNAS]) {
     for (int i = 0; i < LINHAS; i++) {
