@@ -139,13 +139,20 @@ void busca_a_estrela(int mapa[LINHAS][COLUNAS], int inicio_x, int inicio_y, int 
 
 
 void imprimir_mapa(int mapa[LINHAS][COLUNAS]) {
+    int j = 0;
+    for (j = 0; j < COLUNAS; j++) {
+        printf("Y%d",j);
+    }
+    printf("Y%d\n",j);
     for (int i = 0; i < LINHAS; i++) {
+        printf("x%d",i);
         for (int j = 0; j < COLUNAS; j++) {
-            printf("%d ", mapa[i][j]);
+            printf("%d  ", mapa[i][j]);
         }
         printf("\n");
     }
 }
+
 
 void ler_mapa(const char* arquivo, int mapa[LINHAS][COLUNAS], int* inicio_x, int* inicio_y, int* objetivo_x, int* objetivo_y) {
     FILE* f = fopen(arquivo, "r");
