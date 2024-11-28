@@ -104,15 +104,23 @@ void busca_a_estrela(int mapa[LINHAS][COLUNAS], int inicio_x, int inicio_y, int 
     printf("Caminho não encontrado.\n");
 }
 
+
+
 void imprimir_mapa(int mapa[LINHAS][COLUNAS]) {
+    int j = 0;
+    for (j = 0; j < COLUNAS; j++) {
+        printf(" Y%d",j);
+    }
+    printf("\n",j);
     for (int i = 0; i < LINHAS; i++) {
+        printf("x%d ",i);
         for (int j = 0; j < COLUNAS; j++) {
             if (mapa[i][j] == 3) {
                 printf("I "); // Marca o ponto inicial
             } else if (mapa[i][j] == 4) {
                 printf("F "); // Marca o ponto final
             } else {
-                printf("%d ", mapa[i][j]);
+                printf("%d  ", mapa[i][j]);
             }
         }
         printf("\n");
