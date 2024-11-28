@@ -164,9 +164,6 @@ int main() {
 
     corrigir_mapa(mapa, inicio_x, inicio_y, objetivo_x, objetivo_y);
 
-    printf("\nMapa Após Correção (se necessário):\n");
-    imprimir_mapa(mapa);
-
     busca_a_estrela(mapa, inicio_x, inicio_y, objetivo_x, objetivo_y);
 
     printf("\nMapa com Caminho Traçado:\n");
