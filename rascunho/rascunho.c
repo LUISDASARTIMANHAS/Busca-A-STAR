@@ -5,24 +5,13 @@ int heuristica(int x1, int y1, int x2, int y2) {
 }
 
 bool eh_valido(int x, int y, int mapa[LINHAS][COLUNAS], bool lista_fechada[LINHAS][COLUNAS]) {
-    if (x < 0 || x >= LINHAS || y < 0 || y >= COLUNAS) {
-        printf("Nó inválido fora dos limites: (%d, %d)\n", x, y);
-        return false; // Fora dos limites
-    }
-    if (mapa[x][y] == 1) {
-        printf("Nó inválido é uma parede: (%d, %d)\n", x, y);
-        return false; // É uma parede
-    }
-    if (lista_fechada[x][y]) {
-        printf("Nó já processado: (%d, %d)\n", x, y);
-        return false; // Já foi processado
-    }
-    return true;
+    return (x >= 0 && x < LINHAS && y >= 0 && y < COLUNAS &&
+            mapa[x][y] != 1 && !lista_fechada[x][y]);
 }
 
 bool esta_na_lista_aberta(TNoCaminho* lista[], int contagem, int x, int y) {
     for (int i = 0; i < contagem; i++) {
-        if (lista[i]->x == x && lista[i]->y == y) {
+        if (lista[i] && lista[i]->x == x && lista[i]->y == y) {
             return true;
         }
     }
@@ -32,7 +21,7 @@ bool esta_na_lista_aberta(TNoCaminho* lista[], int contagem, int x, int y) {
 TNoCaminho* criar_no(int x, int y, int custo_g, int custo_h, TNoCaminho* pai) {
     TNoCaminho* no = (TNoCaminho*)malloc(sizeof(TNoCaminho));
     if (!no) {
-        perror("Erro ao alocar memória para o nó.");
+        perror("Erro ao alocar memória");
         exit(EXIT_FAILURE);
     }
     no->x = x;
@@ -46,10 +35,8 @@ TNoCaminho* criar_no(int x, int y, int custo_g, int custo_h, TNoCaminho* pai) {
 
 void reconstruir_caminho(TNoCaminho* atual, int mapa[LINHAS][COLUNAS]) {
     while (atual != NULL) {
-        if (atual->x >= 0 && atual->x < LINHAS && atual->y >= 0 && atual->y < COLUNAS) {
-            if (mapa[atual->x][atual->y] != 8 && mapa[atual->x][atual->y] != 9) {
-                mapa[atual->x][atual->y] = 2; // Marca o caminho
-            }
+        if (mapa[atual->x][atual->y] != 3 && mapa[atual->x][atual->y] != 4) {
+            mapa[atual->x][atual->y] = 2;  // Marca o caminho
         }
         atual = atual->pai;
     }
@@ -57,13 +44,15 @@ void reconstruir_caminho(TNoCaminho* atual, int mapa[LINHAS][COLUNAS]) {
 
 void liberar_lista_aberta(TNoCaminho* lista[], int contagem) {
     for (int i = 0; i < contagem; i++) {
-        free(lista[i]);
+        if (lista[i]) {
+            free(lista[i]);
+        }
     }
 }
 
 void busca_a_estrela(int mapa[LINHAS][COLUNAS], int inicio_x, int inicio_y, int objetivo_x, int objetivo_y) {
     bool lista_fechada[LINHAS][COLUNAS] = {false};
-    TNoCaminho* lista_aberta[LINHAS * COLUNAS];
+    TNoCaminho* lista_aberta[LINHAS * COLUNAS] = {NULL};
     int contagem_aberta = 0;
 
     TNoCaminho* inicio = criar_no(inicio_x, inicio_y, 0, heuristica(inicio_x, inicio_y, objetivo_x, objetivo_y), NULL);
@@ -80,16 +69,14 @@ void busca_a_estrela(int mapa[LINHAS][COLUNAS], int inicio_x, int inicio_y, int 
         TNoCaminho* atual = lista_aberta[indice_min];
         lista_aberta[indice_min] = lista_aberta[--contagem_aberta];
 
-        printf("Processando nó: (%d, %d), custo_f: %d\n", atual->x, atual->y, atual->custo_f);
+        printf("Explorando nó: (%d, %d)\n", atual->x, atual->y);
 
-        // Se o nó atual for o objetivo, finalize a busca
         if (atual->x == objetivo_x && atual->y == objetivo_y) {
-            printf("Reconstruindo caminho a partir do nó objetivo: (%d, %d)\n", atual->x, atual->y);
+            printf("Nó objetivo alcançado: (%d, %d)\n", atual->x, atual->y);
             reconstruir_caminho(atual, mapa);
             liberar_lista_aberta(lista_aberta, contagem_aberta);
             free(atual);
-            printf("Caminho encontrado!\n");
-            return; // Encerra o algoritmo
+            return;
         }
 
         lista_fechada[atual->x][atual->y] = true;
@@ -102,52 +89,45 @@ void busca_a_estrela(int mapa[LINHAS][COLUNAS], int inicio_x, int inicio_y, int 
             int ny = atual->y + dy[i];
 
             if (!eh_valido(nx, ny, mapa, lista_fechada)) {
-                continue; // Ignore nós inválidos
+                continue;
             }
 
-            // Se o vizinho for o objetivo, finalize imediatamente
-            if (nx == objetivo_x && ny == objetivo_y) {
-                printf("Nó objetivo alcançado: (%d, %d)\n", nx, ny);
-                reconstruir_caminho(atual, mapa);
-                liberar_lista_aberta(lista_aberta, contagem_aberta);
-                free(atual);
-                return; // Encerra o algoritmo
-            }
-
-            // Adicionar o nó à lista aberta, se ainda não estiver lá
             if (!esta_na_lista_aberta(lista_aberta, contagem_aberta, nx, ny)) {
-                printf("Adicionando nó: (%d, %d) à lista aberta\n", nx, ny);
                 TNoCaminho* vizinho = criar_no(nx, ny, atual->custo_g + 1,
                                                heuristica(nx, ny, objetivo_x, objetivo_y), atual);
                 lista_aberta[contagem_aberta++] = vizinho;
             }
         }
-
-        free(atual);
-
-        // Verificação para evitar loops infinitos
-        if (contagem_aberta == 0) {
-            printf("Erro: Lista aberta vazia, mas o objetivo não foi encontrado.\n");
-            break;
-        }
     }
 
     liberar_lista_aberta(lista_aberta, contagem_aberta);
-    printf("Caminho não encontrado!\n");
+    printf("Caminho não encontrado.\n");
 }
-
-
 
 void imprimir_mapa(int mapa[LINHAS][COLUNAS]) {
     for (int i = 0; i < LINHAS; i++) {
         for (int j = 0; j < COLUNAS; j++) {
-            printf("%d ", mapa[i][j]);
+            if (mapa[i][j] == 3) {
+                printf("I "); // Marca o ponto inicial
+            } else if (mapa[i][j] == 4) {
+                printf("F "); // Marca o ponto final
+            } else {
+                printf("%d ", mapa[i][j]);
+            }
         }
         printf("\n");
     }
 }
 
-void ler_mapa(const char* arquivo, int mapa[LINHAS][COLUNAS], int* inicio_x, int* inicio_y, int* objetivo_x, int* objetivo_y) {
+void corrigir_mapa(int mapa[LINHAS][COLUNAS], int inicio_x, int inicio_y, int objetivo_x, int objetivo_y) {
+    if (mapa[inicio_x][inicio_y] == 1) mapa[inicio_x][inicio_y] = 0;
+    if (mapa[objetivo_x][objetivo_y] == 1) mapa[objetivo_x][objetivo_y] = 0;
+
+    mapa[inicio_x][inicio_y] = 3; // Marca o ponto inicial com 3
+    mapa[objetivo_x][objetivo_y] = 4; // Marca o ponto final com 4
+}
+
+void ler_mapa(const char* arquivo, int mapa[LINHAS][COLUNAS]) {
     FILE* f = fopen(arquivo, "r");
     if (!f) {
         perror("Erro ao abrir o arquivo");
@@ -156,13 +136,10 @@ void ler_mapa(const char* arquivo, int mapa[LINHAS][COLUNAS], int* inicio_x, int
 
     for (int i = 0; i < LINHAS; i++) {
         for (int j = 0; j < COLUNAS; j++) {
-            fscanf(f, "%d", &mapa[i][j]);
-            if (mapa[i][j] == 8) {
-                *inicio_x = i;
-                *inicio_y = j;
-            } else if (mapa[i][j] == 9) {
-                *objetivo_x = i;
-                *objetivo_y = j;
+            if (fscanf(f, "%d", &mapa[i][j]) != 1) {
+                printf("Erro na leitura do mapa. Dados insuficientes.\n");
+                fclose(f);
+                exit(EXIT_FAILURE);
             }
         }
     }
@@ -174,15 +151,22 @@ int main() {
     int mapa[LINHAS][COLUNAS];
     int inicio_x, inicio_y, objetivo_x, objetivo_y;
 
-    // Ler o mapa de um arquivo
-    ler_mapa("../Mapa.txt", mapa, &inicio_x, &inicio_y, &objetivo_x, &objetivo_y);
+    ler_mapa("../Mapa.txt", mapa);
 
     printf("Mapa Inicial:\n");
-    printf("Ponto inicial: (%d, %d)\n", inicio_x, inicio_y);
-    printf("Objetivo: (%d, %d)\n", objetivo_x, objetivo_y);
     imprimir_mapa(mapa);
 
-    // Executa a busca A*
+    printf("\nDigite as coordenadas do ponto inicial (x y): ");
+    scanf("%d %d", &inicio_x, &inicio_y);
+
+    printf("Digite as coordenadas do ponto final (x y): ");
+    scanf("%d %d", &objetivo_x, &objetivo_y);
+
+    corrigir_mapa(mapa, inicio_x, inicio_y, objetivo_x, objetivo_y);
+
+    printf("\nMapa Após Correção (se necessário):\n");
+    imprimir_mapa(mapa);
+
     busca_a_estrela(mapa, inicio_x, inicio_y, objetivo_x, objetivo_y);
 
     printf("\nMapa com Caminho Traçado:\n");
@@ -190,5 +174,3 @@ int main() {
 
     return 0;
 }
-
-
