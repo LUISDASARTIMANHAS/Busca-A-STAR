@@ -1,9 +1,5 @@
 @ECHO OFF
 
-:: Cria as pastas template do projeto 
-start projectMaker.cmd
-
-
 :: Leitura do versao a partir do arquivo info.json
 for /f "tokens=2 delims=:," %%a in ('type info.json ^| findstr /C:"\"version\""') do (
     set "versao=%%~a"
@@ -58,5 +54,8 @@ g++ -Wall -g3 -Wextra -static -static-libgcc -static-libstdc++ %fileName%.c -o "
 tar -a -c -f "zip/%fullFileName%.zip" *data *builds *rascunho *.pdf *.h *.c *.c functions.c *.cmd *.md
 
 msg * /v /w %fullFileName%.exe foi compilado!
+
+:: inicia o auto git 
+start autoGit.cmd
 
 start "RUN" "builds/%fullFileName%.exe"
