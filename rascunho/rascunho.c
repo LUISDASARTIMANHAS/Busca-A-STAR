@@ -126,11 +126,11 @@ void buscaAestrela(int mapa[LINHAS][COLUNAS], int inicio_x, int inicio_y, int ob
 void imprimirMapa(int mapa[LINHAS][COLUNAS]) {
     int j = 0;
     for (j = 0; j < COLUNAS; j++) {
-        printf(" Y%d",j);
+        printf(" X%d",j);
     }
     printf("\n",j);
     for (int i = 0; i < LINHAS; i++) {
-        printf("x%d ",i);
+        printf("Y%d ",i);
         for (int j = 0; j < COLUNAS; j++) {
             if (mapa[i][j] == 3) {
                 printf("I "); // Marca o ponto inicial

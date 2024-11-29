@@ -1,8 +1,9 @@
+// Feito por: Lucas Garcia E Luis Augusto
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <stdbool.h>
-#include "../libs/fileSys.cpp"
+#include "libs/fileSys.cpp"
 
 #define RASCUNHO_H // Define o identificador
 

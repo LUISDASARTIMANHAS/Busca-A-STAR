@@ -1,4 +1,4 @@
-#
+// Feito por: Lucas Garcia E Luis Augusto
 #include "busca-A-star.h"
 
 int heuristica(int x1, int y1, int x2, int y2) {
@@ -126,11 +126,11 @@ void buscaAestrela(int mapa[LINHAS][COLUNAS], int inicio_x, int inicio_y, int ob
 void imprimirMapa(int mapa[LINHAS][COLUNAS]) {
     int j = 0;
     for (j = 0; j < COLUNAS; j++) {
-        printf(" Y%d",j);
+        printf(" X%d",j);
     }
     printf("\n",j);
     for (int i = 0; i < LINHAS; i++) {
-        printf("x%d ",i);
+        printf("Y%d ",i);
         for (int j = 0; j < COLUNAS; j++) {
             if (mapa[i][j] == 3) {
                 printf("I "); // Marca o ponto inicial
@@ -190,7 +190,7 @@ int main() {
    int inicioX, inicioY, objetivoX, objetivoY;
 
 
-   lerMapa("../Mapa.txt", mapa);
+   lerMapa("../data/Mapa.txt", mapa);
 
 
    printf("Mapa Inicial:\n");
