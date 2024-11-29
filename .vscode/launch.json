@@ -7,9 +7,9 @@
       "request": "launch",
       "args": [],
       "stopAtEntry": false,
-      "externalConsole": false,
-      "cwd": "/home/lucas/Documentos/ifes-2ano/Busca-A-STAR/rascunho",
-      "program": "/home/lucas/Documentos/ifes-2ano/Busca-A-STAR/rascunho/build/Debug/outDebug",
+      "externalConsole": true,
+      "cwd": "d:/Users/2023122760328/Desktop/Meus Projetos Vscode/Busca-A-STAR",
+      "program": "d:/Users/2023122760328/Desktop/Meus Projetos Vscode/Busca-A-STAR/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

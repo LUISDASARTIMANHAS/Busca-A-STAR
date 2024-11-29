@@ -1,7 +1,9 @@
+// Feito por: Lucas Garcia E Luis Augusto
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <stdbool.h>
+#include "../libs/fileSys.cpp"
 
 #define RASCUNHO_H // Define o identificador
 
@@ -18,7 +20,7 @@ typedef struct NoCaminho {
 } TNoCaminho;
 
 
-void lerMapa(const char* arquivo, int mapa[LINHAS][COLUNAS]);
+void lerMapa(char* arquivo, int mapa[LINHAS][COLUNAS]);
 void imprimirMapa(int mapa[LINHAS][COLUNAS]);
 void buscaAestrela(int mapa[LINHAS][COLUNAS], int inicio_x, int inicio_y, int objetivo_x, int objetivo_y);
 

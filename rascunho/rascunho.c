@@ -1,3 +1,4 @@
+// Feito por: Lucas Garcia E Luis Augusto
 #include "rascunho.h"
 
 int heuristica(int x1, int y1, int x2, int y2) {
@@ -123,18 +124,24 @@ void buscaAestrela(int mapa[LINHAS][COLUNAS], int inicio_x, int inicio_y, int ob
 
 
 void imprimirMapa(int mapa[LINHAS][COLUNAS]) {
-   for (int i = 0; i < LINHAS; i++) {
-       for (int j = 0; j < COLUNAS; j++) {
-           if (mapa[i][j] == 3) {
-               printf("I "); // Marca o ponto inicial
-           } else if (mapa[i][j] == 4) {
-               printf("F "); // Marca o ponto final
-           } else {
-               printf("%d ", mapa[i][j]);
-           }
-       }
-       printf("\n");
-   }
+    int j = 0;
+    for (j = 0; j < COLUNAS; j++) {
+        printf(" Y%d",j);
+    }
+    printf("\n",j);
+    for (int i = 0; i < LINHAS; i++) {
+        printf("x%d ",i);
+        for (int j = 0; j < COLUNAS; j++) {
+            if (mapa[i][j] == 3) {
+                printf("I "); // Marca o ponto inicial
+            } else if (mapa[i][j] == 4) {
+                printf("F "); // Marca o ponto final
+            } else {
+                printf("%d  ", mapa[i][j]);
+            }
+        }
+        printf("\n");
+    }
 }
 
 
@@ -144,12 +151,8 @@ void corrigirMapa(int mapa[LINHAS][COLUNAS], int inicio_x, int inicio_y, int obj
 }
 
 
-void lerMapa(const char* arquivo, int mapa[LINHAS][COLUNAS]){
-   FILE* f = fopen(arquivo, "r");
-   if (!f) {
-       perror("Erro ao abrir o arquivo");
-       exit(EXIT_FAILURE);
-   }
+void lerMapa(char* arquivo, int mapa[LINHAS][COLUNAS]){
+   FILE* f = abrirArquivo(arquivo,"r");
 
 
    for (int i = 0; i < LINHAS; i++) {
