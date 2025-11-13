@@ -1,66 +1,60 @@
-# Busca-A-STAR
-Implementação do A*
+# Projeto de Implementação do Algoritmo A*
 
-## Busca A*
-• Estratégia:
-- Combina o custo do caminho g(n) com o valor da
-heurística h(n)
+## Descrição
 
-- g(n) = custo do caminho do nó inicial até o nó n
+Este projeto acadêmico consiste na implementação do algoritmo de busca A* (A-estrela) em linguagem C. O objetivo é encontrar o caminho de menor custo entre um ponto inicial e um ponto final em um mapa bidimensional, representado por uma matriz. O mapa pode conter obstáculos, que são considerados intransponíveis pelo algoritmo.
 
-- h(n) = valor da heurística do nó n até um nó
+## Proposta
 
-objetivo (distancia em linha reta no caso de
-distancias espaciais)
+A proposta deste trabalho é aplicar os conceitos de algoritmos de busca heurística, estudados na disciplina de Inteligência Artificial, em um problema prático de busca de caminho. O algoritmo A* foi escolhido por ser uma das técnicas mais eficientes e amplamente utilizadas para este tipo de problema, garantindo a otimalidade e a completude da busca quando utilizada uma heurística admissível.
 
-- f(n) = g(n) + h(n)
+## Objetivo
 
- - É a técnica de busca mais utilizada.
+O principal objetivo deste projeto é desenvolver uma implementação funcional e eficiente do algoritmo A*, capaz de:
 
-## A estratégia é completa e ótima.
+- Ler um mapa de um arquivo de texto.
+- Permitir que o usuário defina as coordenadas de início e fim.
+- Calcular o caminho de menor custo, evitando obstáculos.
+- Exibir o mapa com o caminho encontrado.
 
-• Custo de tempo:
-- Exponencial com o comprimento da solução,
-porém boas funções heurísticas diminuem
-significativamente esse custo.
+## Tecnologias Utilizadas
 
-- Custo memória:
-- Guarda todos os nós expandidos na memória.
-- Nenhum outro algoritmo ótimo garante expandir
-menos nós.
+- **Linguagem de Programação:** C
+- **Compilador:** GCC (MinGW)
+- **Editor de Código:** Visual Studio Code
 
-guardar dois vetores pra guardar a precisão do A*, os dados serão jogados de um para o outro ate um deles estiver vazio.
+## Algoritmo A*
 
-***
+O algoritmo A* utiliza uma função de avaliação `f(n)` para decidir qual nó da fronteira de busca deve ser expandido em seguida. A função é definida como:
 
-## Definindo Heurísticas
-- Um problema com a geração de novas funções
-heurísticas é que muitas vezes não se consegue
-obter uma única heurística “claramente melhor”.
+`f(n) = g(n) + h(n)`
 
-- Podemos ter o melhor dos mundos através da
-definição:
+Onde:
 
-h(n) = max {h¹(n),..., hm
-(n)}.
+- `g(n)`: é o custo do caminho percorrido desde o nó inicial até o nó `n`.
+- `h(n)`: é o valor da heurística, que estima o custo do caminho do nó `n` até o nó objetivo.
 
-- Heurística do A*: f(n) = g(n) + h(n)
-  - g(n) = custo do caminho
-  - h(n) = função heurística
-- Qual seria a função heurística h(n) mais
-adequada para este problema?
-  - A distância em linha reta é uma opção.
-  - Essa heurística composta utiliza qualquer função
-que seja mais precisa no nó em questão.
+Neste projeto, a heurística utilizada é a **Distância de Manhattan**, que é calculada pela soma das diferenças absolutas das coordenadas `x` e `y` entre o nó atual e o nó objetivo.
 
-O próximo passo é gerar a árvore de
-busca e expandir os nós que tiverem
-o menor valor resultante da função
-heurística f(n).
+## Estrutura do Projeto
 
-- f(n) = g(n) + h(n)
-EX:
+- **`busca-A-star.c`**: Contém a implementação principal do algoritmo A*, a lógica de manipulação do mapa e a função `main`.
+- **`busca-A-star.h`**: Arquivo de cabeçalho com as declarações de funções e estruturas de dados.
+- **`data/Mapa.txt`**: Arquivo de texto que representa o mapa a ser percorrido.
+- **`libs/`**: Contém bibliotecas auxiliares.
 
-[1,2] = f(n) = ?? + ??
+## Como Compilar e Executar
 
-[2,1] = f(n) = ?? + ??
+1.  **Compilar:**
+    ```bash
+    gcc busca-A-star.c -o busca-A-star.exe -lm
+    ```
+2.  **Executar:**
+    ```bash
+    ./busca-A-star.exe
+    ```
+
+## Autores
+
+- Lucas Garcia
+- Luis Augusto
